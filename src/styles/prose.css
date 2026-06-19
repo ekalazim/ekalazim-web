@@ -1,0 +1,36 @@
+/*
+ * Prose (blog article) typography — applied via the `.prose` class to
+ * rendered Notion content. This is a minimal Phase 1 stub; the full
+ * typography pass happens in Phase 3 (Blog) per `.claude/patterns/styling.md`.
+ *
+ * Do not modify for one-off overrides — add a utility class instead.
+ */
+@import "tailwindcss";
+
+.prose {
+  max-width: var(--container-content);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+.prose :where(h1, h2, h3, h4, h5, h6) {
+  line-height: 1.1;
+}
+
+.prose a {
+  color: var(--color-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 150ms ease;
+}
+
+.prose a:hover {
+  color: var(--color-brand-hover);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.375rem;
+}

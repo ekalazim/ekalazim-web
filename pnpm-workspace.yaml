@@ -1,0 +1,8 @@
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
+
+onlyBuiltDependencies:
+  - "@biomejs/biome"
+  - esbuild
+  - simple-git-hooks
