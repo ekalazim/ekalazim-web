@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { env } from "@/lib/env";
+import type { Project } from "@/types/project";
 import type { Metadata } from "next";
 
 interface PageMetadataOptions {
@@ -64,5 +65,54 @@ export function buildMetadata({ title, description, path = "/" }: PageMetadataOp
       title,
       description,
     },
+  };
+}
+
+/**
+ * Metadata for a project case-study page. The per-project OG image is served
+ * by the `opengraph-image.tsx` route segment, so no `images` field is set here
+ * — Next.js associates it automatically.
+ */
+export function generateProjectMetadata(project: Project): Metadata {
+  return buildMetadata({
+    title: project.title,
+    description: project.summary,
+    path: `/projects/${project.slug}`,
+  });
+}
+
+/** JSON-LD shape shared by the structured-data builders below. */
+export type JsonLd = Record<string, unknown>;
+
+/** `CreativeWork` structured data for a project detail page. */
+export function projectJsonLd(project: Project): JsonLd {
+  const url = new URL(`/projects/${project.slug}`, env.NEXT_PUBLIC_SITE_URL).toString();
+  return {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.summary,
+    url,
+    keywords: project.tags.join(", "),
+    author: {
+      "@type": "Person",
+      name: siteConfig.author,
+      url: siteConfig.url,
+    },
+    ...(project.liveUrl ? { sameAs: [project.liveUrl] } : {}),
+  };
+}
+
+/** `BreadcrumbList` structured data from ordered `{ name, path }` items. */
+export function breadcrumbJsonLd(items: readonly { name: string; path: string }[]): JsonLd {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: new URL(item.path, env.NEXT_PUBLIC_SITE_URL).toString(),
+    })),
   };
 }

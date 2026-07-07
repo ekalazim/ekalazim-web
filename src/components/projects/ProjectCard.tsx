@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { ProjectAccent, ProjectSummary } from "@/types/project";
+import Link from "next/link";
 
 interface ProjectCardProps {
   project: ProjectSummary;
@@ -21,25 +22,33 @@ const ACCENT_TAG: Record<ProjectAccent, string> = {
 /** Project summary card used in `FeaturedWork` and the `/projects` grid. */
 export function ProjectCard({ project, className }: ProjectCardProps) {
   return (
-    <article
+    <Link
+      href={`/projects/${project.slug}`}
+      aria-label={`${project.title} — case study`}
       className={cn(
-        "group rounded-lg border border-border bg-bg-elevated p-6 transition-all duration-200 hover:scale-[1.02]",
-        ACCENT_BORDER[project.accent],
+        "group block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
         className,
       )}
     >
-      <h3 className="text-xl font-semibold text-text-primary">{project.title}</h3>
-      <p className="mt-2 text-sm text-text-secondary">{project.summary}</p>
-      <ul className="mt-4 flex flex-wrap gap-2">
-        {project.tags.map((tag) => (
-          <li
-            key={tag}
-            className={cn("rounded-full px-3 py-1 text-xs font-medium", ACCENT_TAG[project.accent])}
-          >
-            {tag}
-          </li>
-        ))}
-      </ul>
-    </article>
+      <article
+        className={cn(
+          "h-full rounded-lg border border-border bg-bg-elevated p-6 transition-all duration-200 group-hover:scale-[1.02]",
+          ACCENT_BORDER[project.accent],
+        )}
+      >
+        <h3 className="text-xl font-semibold text-text-primary">{project.title}</h3>
+        <p className="mt-2 text-sm text-text-secondary">{project.summary}</p>
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {project.tags.map((tag) => (
+            <li
+              key={tag}
+              className={cn("rounded-full px-3 py-1 text-xs font-medium", ACCENT_TAG[project.accent])}
+            >
+              {tag}
+            </li>
+          ))}
+        </ul>
+      </article>
+    </Link>
   );
 }
