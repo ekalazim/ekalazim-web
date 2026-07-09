@@ -15,8 +15,15 @@ import { z } from "zod";
  */
 const envSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url().default("https://ekalazim.com"),
+  // Notion (blog). Optional during phased rollout: when unset, the blog data
+  // layer degrades to an empty state so builds/deploys stay green before the
+  // integration exists. See `.claude/patterns/data-fetching.md`.
+  NOTION_API_KEY: z.string().min(1).optional(),
+  NOTION_BLOG_DATABASE_ID: z.string().min(1).optional(),
 });
 
 export const env = envSchema.parse({
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NOTION_API_KEY: process.env.NOTION_API_KEY,
+  NOTION_BLOG_DATABASE_ID: process.env.NOTION_BLOG_DATABASE_ID,
 });
