@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./prose.css";
 
 /*
  * Design tokens — source of truth: .claude/patterns/styling.md

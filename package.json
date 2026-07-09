@@ -2,6 +2,7 @@
   "name": "ekalazim-web",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.10.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,16 +24,26 @@
     "*.{js,jsx,ts,tsx,json,jsonc,css}": "biome check --write --no-errors-on-unmatched"
   },
   "dependencies": {
+    "@notionhq/client": "^2.3.0",
     "@radix-ui/react-slot": "^1.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "feed": "^6.0.0",
     "geist": "^1.5.1",
     "lucide-react": "^0.487.0",
     "next": "^15.5.4",
     "next-themes": "^0.4.6",
+    "notion-to-md": "^3.1.9",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "rehype-pretty-code": "^0.14.4",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "shiki": "^4.3.1",
     "tailwind-merge": "^3.3.1",
+    "unified": "^11.0.5",
     "zod": "^3.24.4"
   },
   "devDependencies": {
