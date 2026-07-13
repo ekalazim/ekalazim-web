@@ -31,15 +31,22 @@ const resend = emailConfig ? new Resend(emailConfig.apiKey) : null;
  */
 export async function sendContactEmail(payload: ContactEmailPayload): Promise<void> {
   if (!resend || !emailConfig) {
-    console.info("[Contact] Email not configured — logging payload instead:", payload);
+    // Log only that a message would have been sent — never the message body or
+    // the sender's details — to avoid writing PII to server/log storage.
+    console.info("[Contact] Email not configured — a message would have been sent.");
     return;
   }
+
+  // Strip CR/LF from the sender name before interpolating it into the subject.
+  // Resend's JSON API already encodes headers safely, but this is cheap
+  // defense-in-depth against header-injection-style payloads.
+  const safeName = payload.name.replace(/[\r\n]+/g, " ").trim();
 
   const { error } = await resend.emails.send({
     from: emailConfig.from,
     to: emailConfig.to,
     replyTo: payload.email,
-    subject: `[Portfolio Contact] Message from ${payload.name}`,
+    subject: `[Portfolio Contact] Message from ${safeName}`,
     text: `
 Name: ${payload.name}
 Email: ${payload.email}

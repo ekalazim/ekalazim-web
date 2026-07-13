@@ -22,9 +22,13 @@ export async function sendContactMessage(formData: ContactFormData): Promise<Act
     };
   }
 
-  // Step 3: Rate limiting by client IP.
+  // Step 3: Rate limiting by client IP. Prefer `x-real-ip` (set by the hosting
+  // platform, not client-spoofable) and fall back to the first `x-forwarded-for`
+  // entry. Header-based identification is inherently best-effort — the honeypot
+  // and email provider are the primary abuse defenses.
   const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for") ?? "unknown";
+  const forwardedFor = headersList.get("x-forwarded-for");
+  const ip = headersList.get("x-real-ip") ?? forwardedFor?.split(",")[0]?.trim() ?? "unknown";
   const rateLimitResult = await checkRateLimit(ip);
 
   if (!rateLimitResult.allowed) {
