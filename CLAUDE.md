@@ -173,14 +173,22 @@ Full rules in `.claude/patterns/components.md`. Key points:
 
 ## Current Phase
 
-**Phase 1 — Foundation**
+**Phase 5 — Launch**
+
+Phases 1–4 are complete (Foundation, Projects, Blog, Contact + Quality). Phase 4
+shipped the contact form (React Hook Form + Zod → Server Action with honeypot,
+Upstash rate limiting, and Resend email), Sentry error tracking, Playwright E2E
+coverage for contact, and restored the Lighthouse performance gate to ≥ 95.
+
+Note: the contact/Sentry/rate-limit services degrade gracefully when their env
+vars are unset — email logs to the console, rate limiting fails open, and Sentry
+no-ops — so builds and E2E stay green without secrets. Real values in Vercel
+activate real behavior.
 
 Goals for this phase:
-- Repo setup, Next.js scaffold, pnpm, Biome, TypeScript strict
-- Design tokens + typography in `globals.css`
-- Layout shell: header, footer, theme provider (dark/light/system)
-- Homepage and About page (static content, placeholder copy)
-- Deploy to Vercel with custom domain `ekalazim.com`
-- Lighthouse baseline ≥ 95
+- Public announcement (LinkedIn / X)
+- Submit sitemap to Google Search Console
+- Confirm production monitoring (Sentry, Vercel Analytics)
+- Update resume with portfolio link
 
-When Phase 1 is complete, update this line to: `Phase 2 — Projects`
+When Phase 5 is complete, update this line to: `Phase 6 — Post-Launch (v1.5)`
