@@ -139,3 +139,147 @@ baseline are pending (user-run, see `DEPLOY.md`).
   user-run deploy steps in `DEPLOY.md`.
 - `/projects`, `/blog`, `/now`, and `/contact` are intentionally minimal
   placeholders — full implementations land in Phases 2–4.
+
+> **Update:** all three follow-ups above are resolved as of Phase 4 — see
+> "Phase 1 follow-ups now resolved" under Phase 5.
+
+---
+
+## Phase 2 — Projects
+
+**Status:** Complete. Shipped in `2ba40ee`.
+
+### Project data & types
+- `src/content/projects/index.ts` — 4 authored case studies (`moosanclub`,
+  `hoopripple`, `affiliscale-admin`, `ekalazim-com`), each carrying the
+  problem / approach / tradeoffs / outcome narrative the PRD requires.
+- `src/types/project.ts` extended from the Phase 1 summary type to the full
+  case-study shape.
+- `src/lib/projects.ts` — `getAllProjects`, `getProjectBySlug`,
+  `getAllProjectSlugs` (feeds `generateStaticParams`), `getAllTags` (sorted,
+  deduped, for the filter UI), and `getAdjacentProjects` (prev/next nav).
+
+### Pages & components
+- **`/projects`** (SSG) — `ProjectsExplorer` wrapping a `ProjectCard` grid.
+- **`/projects/[slug]`** (SSG + `generateStaticParams`) — `ProjectCaseStudy`
+  composed of `CaseStudySection` blocks, with `ProjectNav` for prev/next.
+- `TechTagFilter` — tag state lives in the URL (`?tag=`) via
+  `useSearchParams`/`useRouter`, so filters are shareable and survive refresh
+  (per `.claude/patterns/routing.md` §"URL-Synced State").
+- `FeaturedWork` on the homepage rewired from placeholders to real data.
+
+### SEO
+- `src/app/(marketing)/projects/[slug]/opengraph-image.tsx` — unique 1200×630
+  OG image per project via `next/og`.
+- `src/components/shared/JsonLd.tsx` — reusable structured-data component.
+- `src/lib/seo.ts` extended with project metadata builders; `sitemap.ts` now
+  enumerates every project slug.
+
+### Tests
+- `tests/unit/projects.test.ts` — data-layer coverage.
+- `tests/e2e/projects.spec.ts` — 3 tests (direct URL navigation, filter URL
+  sync, refresh survival) across both Playwright projects.
+
+---
+
+## Phase 3 — Blog
+
+**Status:** Complete. Shipped in `85205c9` (PR #3).
+
+### Notion data layer
+- `src/lib/notion.ts` — the only module that talks to Notion
+  (`@notionhq/client` + `notion-to-md`). Queries `Status = Published`, sorts
+  by `Published Date` descending, and maps every response into our own typed
+  objects so the API key never reaches the browser.
+- Degrades by design: with `NOTION_API_KEY` / `NOTION_BLOG_DATABASE_ID`
+  unset, the list resolves to `[]` and a single post to `null` rather than
+  failing the build — CI and fresh clones stay green without secrets.
+- `src/lib/reading-time.ts` — word-count based reading estimate.
+- `src/lib/env.ts` extended with the two optional Notion vars.
+
+### Pages & components (ISR, 60s)
+- **`/blog`** and **`/blog/[slug]`** both `export const revalidate = 60`,
+  matching the rendering strategy table in `CLAUDE.md`.
+- `BlogExplorer`, `PostCard`, `PostTagFilter` (URL-synced `?tag=`, same
+  pattern as the projects filter), `ArticleHeader`, `PostContent`.
+- `ReadingProgress` — fixed top progress bar, `requestAnimationFrame`
+  throttled, hidden from assistive tech, static under `prefers-reduced-motion`.
+- `LatestPosts` on the homepage rewired from placeholders to Notion data.
+- `src/styles/prose.css` grown from the Phase 1 stub into full article
+  typography (120 lines).
+
+### RSS & SEO
+- `src/app/rss.xml/route.ts` — RSS 2.0 via the `feed` package, `revalidate =
+  60` to match the blog. Emits a valid (empty) feed when Notion is
+  unreachable rather than erroring.
+- `src/app/(marketing)/blog/[slug]/opengraph-image.tsx` — per-post OG images.
+- `sitemap.ts` extended with post slugs.
+
+### Tests
+- `tests/unit/notion.test.ts`, `tests/unit/reading-time.test.ts`.
+- `tests/e2e/blog.spec.ts` — 3 tests across both Playwright projects.
+
+---
+
+## Phase 4 — Contact + Quality
+
+**Status:** Complete. Shipped in `4c1a283`, hardened in `1d7de83`.
+
+### Contact form
+- `src/lib/contact-schema.ts` — the Zod schema shared by client and server.
+  It lives outside the action file because a `"use server"` module may only
+  export async functions; exporting a runtime value from it breaks the
+  client bundle.
+- `src/components/shared/ContactForm.tsx` — React Hook Form + `zodResolver`,
+  with the honeypot field.
+- `src/actions/contact.ts` — Server Action in four steps: honeypot check
+  (returns a fake success so bots never learn it's a trap) → server-side
+  re-validation → IP rate limit → send.
+- `src/lib/rate-limit.ts` — Upstash sliding window, 3 requests per hour per
+  IP, prefix `portfolio:contact`. **Fails open** when credentials are unset.
+- `src/lib/email.ts` — Resend send with `replyTo` set to the sender; logs
+  instead of sending when unconfigured.
+- `src/types/actions.ts` — shared `ActionResult` discriminated union.
+
+### Security hardening (`1d7de83`, post-review)
+- Rate-limit key prefers `x-real-ip` (platform-set) over the client-spoofable
+  `x-forwarded-for`, falling back to its first entry.
+- CR/LF stripped from the sender name before it's interpolated into the email
+  subject — defense-in-depth against header-injection-style payloads.
+- PII redacted from the unconfigured-email log line (no body, no sender).
+- Dropped Sentry's `enableLogs` flag to avoid forwarding PII to logs.
+
+### Error tracking
+- `instrumentation.ts`, `instrumentation-client.ts`,
+  `sentry.server.config.ts`, `sentry.edge.config.ts`, and a root
+  `global-error.tsx`. Every entry point no-ops without
+  `NEXT_PUBLIC_SENTRY_DSN`, so local and CI runs are unaffected.
+- `src/app/error.tsx` now calls `Sentry.captureException` alongside the
+  existing console log, closing the Phase 1 follow-up.
+
+### Quality gates
+- E2E suite grown to 14 tests × 2 Playwright projects: `smoke` (4),
+  `projects` (3), `blog` (3), `contact` (4 — including honeypot rejection).
+- `lighthouserc.json` restored to Performance ≥ 0.95 (undoing the temporary
+  relaxation in `3a3b842`), Accessibility ≥ 0.95, median of 3 runs.
+- `.env.example` documents all 9 variables; `next.config.ts` wrapped for
+  Sentry.
+
+---
+
+## Phase 5 — Launch
+
+**Status:** In progress. Every remaining deliverable is external or manual —
+there is no code left to write for this phase.
+
+- [ ] Sitemap submitted to Google Search Console
+- [ ] LinkedIn / X announcement published
+- [ ] Resume updated with the portfolio link
+- [ ] Production monitoring confirmed (Sentry receiving events, Vercel
+      Analytics reporting RUM)
+
+### Phase 1 follow-ups now resolved
+- `public/resume.pdf` exists — the About page's download link is no longer
+  dead.
+- `/projects`, `/blog`, and `/contact` are no longer placeholders; only
+  `/now` remains a manually-maintained static page, which is by design.

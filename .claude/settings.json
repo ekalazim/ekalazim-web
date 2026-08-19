@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/progress-log-check.mjs",
+            "timeout": 10,
+            "statusMessage": "Checking progress log"
+          }
+        ]
+      }
+    ]
+  }
+}

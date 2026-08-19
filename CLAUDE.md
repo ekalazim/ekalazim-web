@@ -192,3 +192,32 @@ Goals for this phase:
 - Update resume with portfolio link
 
 When Phase 5 is complete, update this line to: `Phase 6 — Post-Launch (v1.5)`
+
+---
+
+## Progress Log — Definition of Done
+
+`progress.md` is the running record of what shipped, phase by phase. It went
+three phases stale once (Phases 2–4 were built but never logged) because
+nothing tied the log to the work. This rule closes that gap.
+
+**A phase is not complete until, in the same commit that finishes it:**
+
+1. `progress.md` has a `## Phase N — Name` section describing what was built
+   and why — matching the structure of the existing entries (Status line,
+   `###` subsections by area, backticked file paths, a Tests subsection).
+2. The `## Current Phase` section above is bumped to the next phase, with its
+   goals list replaced.
+3. Any "Known follow-ups" from earlier phases that this work resolved are
+   marked resolved rather than left to rot.
+
+**Also log mid-phase:** any change that alters architecture, adds a dependency,
+introduces an env var, or changes a rendering strategy gets a bullet in the
+current phase's section — don't wait for the phase boundary.
+
+A `PreToolUse` hook (`.claude/hooks/progress-log-check.mjs`, wired up in
+`.claude/settings.json`) intercepts git-commit commands whose message names a
+phase and asks for confirmation when `progress.md` is neither staged nor
+modified. It prompts rather than blocks — commits mention phases in passing
+all the time — and fails silent on any internal error so it can never wedge a
+commit. The hook is a safety net, not the rule; this section is the rule.
