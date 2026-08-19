@@ -173,14 +173,51 @@ Full rules in `.claude/patterns/components.md`. Key points:
 
 ## Current Phase
 
-**Phase 1 — Foundation**
+**Phase 5 — Launch**
+
+Phases 1–4 are complete (Foundation, Projects, Blog, Contact + Quality). Phase 4
+shipped the contact form (React Hook Form + Zod → Server Action with honeypot,
+Upstash rate limiting, and Resend email), Sentry error tracking, Playwright E2E
+coverage for contact, and restored the Lighthouse performance gate to ≥ 95.
+
+Note: the contact/Sentry/rate-limit services degrade gracefully when their env
+vars are unset — email logs to the console, rate limiting fails open, and Sentry
+no-ops — so builds and E2E stay green without secrets. Real values in Vercel
+activate real behavior.
 
 Goals for this phase:
-- Repo setup, Next.js scaffold, pnpm, Biome, TypeScript strict
-- Design tokens + typography in `globals.css`
-- Layout shell: header, footer, theme provider (dark/light/system)
-- Homepage and About page (static content, placeholder copy)
-- Deploy to Vercel with custom domain `ekalazim.com`
-- Lighthouse baseline ≥ 95
+- Public announcement (LinkedIn / X)
+- Submit sitemap to Google Search Console
+- Confirm production monitoring (Sentry, Vercel Analytics)
+- Update resume with portfolio link
 
-When Phase 1 is complete, update this line to: `Phase 2 — Projects`
+When Phase 5 is complete, update this line to: `Phase 6 — Post-Launch (v1.5)`
+
+---
+
+## Progress Log — Definition of Done
+
+`progress.md` is the running record of what shipped, phase by phase. It went
+three phases stale once (Phases 2–4 were built but never logged) because
+nothing tied the log to the work. This rule closes that gap.
+
+**A phase is not complete until, in the same commit that finishes it:**
+
+1. `progress.md` has a `## Phase N — Name` section describing what was built
+   and why — matching the structure of the existing entries (Status line,
+   `###` subsections by area, backticked file paths, a Tests subsection).
+2. The `## Current Phase` section above is bumped to the next phase, with its
+   goals list replaced.
+3. Any "Known follow-ups" from earlier phases that this work resolved are
+   marked resolved rather than left to rot.
+
+**Also log mid-phase:** any change that alters architecture, adds a dependency,
+introduces an env var, or changes a rendering strategy gets a bullet in the
+current phase's section — don't wait for the phase boundary.
+
+A `PreToolUse` hook (`.claude/hooks/progress-log-check.mjs`, wired up in
+`.claude/settings.json`) intercepts git-commit commands whose message names a
+phase and asks for confirmation when `progress.md` is neither staged nor
+modified. It prompts rather than blocks — commits mention phases in passing
+all the time — and fails silent on any internal error so it can never wedge a
+commit. The hook is a safety net, not the rule; this section is the rule.

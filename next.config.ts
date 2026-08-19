@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -26,4 +27,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wraps the config to instrument the app with Sentry. Source-map upload only
+// runs when SENTRY_AUTH_TOKEN is present (CI/Vercel); otherwise it is silently
+// skipped, so local/CI builds stay green without Sentry credentials.
+export default withSentryConfig(nextConfig, {
+  silent: !process.env.CI,
+  disableLogger: true,
+});

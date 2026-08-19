@@ -3,6 +3,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 interface ErrorPageProps {
@@ -13,7 +14,9 @@ interface ErrorPageProps {
 /** Rendered when a Server or Client Component throws within this segment. */
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   useEffect(() => {
-    // Replace with Sentry capture once error tracking is wired up (Phase 4).
+    // Report to Sentry (no-ops when the DSN is unset) and keep the console
+    // log for local visibility.
+    Sentry.captureException(error);
     console.error(error);
   }, [error]);
 
